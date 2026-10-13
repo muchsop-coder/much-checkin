@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>much เช็คชื่อ</title>
+<meta name="theme-color" content="#946B2D">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="much เช็คชื่อ">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://script.google.com" crossorigin>
+<style>
+:root{--brand:#946B2D;--brand-d:#6E4F1F;--brand-50:#F6EEDF;--cream:#FBF5EC;--ink:#3B2A12;--ink2:#6B5A44;--line:#E9DECB;
+--ok:#2F7A3B;--ok50:#E3F2E2;--bad:#B23A2A;--bad50:#FBE5E1;--orange:#E9802A;--warn:#A86A00;--warn50:#FFF2D6}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--cream);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI","Noto Sans Thai","Noto Sans Myanmar",sans-serif;min-height:100%}
+body{padding:env(safe-area-inset-top) 16px calc(16px + env(safe-area-inset-bottom))}
+.wrap{max-width:440px;margin:0 auto}
+header{display:flex;align-items:center;gap:10px;padding:14px 0 6px}
+header .logo{width:36px;height:36px;border-radius:10px;background:var(--brand);color:#fff;display:grid;place-items:center;font-weight:700}
+header .t{font-weight:700;flex:1}
+.lang{border:1px solid var(--line);background:#fff;border-radius:999px;padding:4px 10px;font-size:13px;color:var(--ink2)}
+.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:18px;margin-top:12px;box-shadow:0 4px 14px rgba(59,42,18,.06)}
+h1{font-size:22px;margin:0 0 2px}
+.muted{color:var(--ink2)} .small{font-size:14px} .tiny{font-size:12.5px;color:var(--ink2)}
+label.f{display:block;margin:12px 0 4px;font-size:14px;color:var(--ink2)}
+input[type=text],input[type=password]{width:100%;font-size:17px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--ink)}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;border:0;border-radius:14px;padding:14px;font-size:17px;font-weight:600;background:var(--brand-50);color:var(--brand-d);margin-top:12px;cursor:pointer}
+.btn.primary{background:var(--brand);color:#fff} .btn.orange{background:var(--orange);color:#fff}
+.btn.big{padding:20px;font-size:20px;border-radius:18px}
+.btn.ghost{background:transparent;color:var(--ink2);font-weight:500;font-size:15px}
+.btn:disabled{opacity:.5}
+.err{color:var(--bad);font-size:14px;margin-top:8px;min-height:1px}
+.pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 10px;font-size:13.5px;background:var(--brand-50);color:var(--brand-d)}
+.pill.ok{background:var(--ok50);color:var(--ok)} .pill.bad{background:var(--bad50);color:var(--bad)} .pill.warn{background:var(--warn50);color:var(--warn)}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.cam{position:relative;width:min(78vw,320px);aspect-ratio:1;margin:8px auto 0;border-radius:50%;overflow:hidden;background:#222}
+.cam video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+.ring{position:absolute;inset:0;border-radius:50%;pointer-events:none}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:6}
+.ring .bg{stroke:rgba(255,255,255,.35)} .ring .fg{stroke:var(--ok);stroke-linecap:round;transition:stroke-dashoffset .25s}
+.cam.ok .ring .bg{stroke:var(--ok)}
+.status{text-align:center;margin-top:12px;font-size:17px;font-weight:600;min-height:52px}
+.done{text-align:center;padding:12px 0}
+.done .ico{width:96px;height:96px;margin:0 auto;border-radius:50%;background:var(--ok);color:#fff;display:grid;place-items:center;font-size:54px;animation:pop .35s ease-out}
+.done.late .ico{background:var(--orange)}
+@keyframes pop{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
+.done h2{margin:12px 0 2px;font-size:24px}
+.checks{margin-top:10px;display:grid;gap:6px}
+.check{display:flex;gap:8px;align-items:flex-start;font-size:14.5px}
+.check b{min-width:22px;text-align:center}
+.consent{display:flex;gap:10px;align-items:flex-start;margin-top:12px;font-size:15px}
+.consent input{width:22px;height:22px;margin-top:2px}
+.hide{display:none!important}
+.spin{width:18px;height:18px;border:2.5px solid currentColor;border-right-color:transparent;border-radius:50%;animation:sp 0.8s linear infinite;display:inline-block}
+@keyframes sp{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header><div class="logo">m</div><div class="t" id="hTitle">much เช็คชื่อ</div><button class="lang" id="langBtn" onclick="toggleLang()">မြန်မာ</button></header>
+  <main id="main"><div class="card"><span class="spin"></span></div></main>
+  <div class="tiny" style="text-align:center;margin-top:18px" id="foot"></div>
+</div>
+<script>
+'use strict';
+var API = 'https://script.google.com/macros/s/AKfycbxm7E3cd74m2vPfRfgv21yOJHj4bFNCx6yhYqUn3fgDASt8yFFnxJV11W15QvhqgnH4/exec';
+var APP = API;
+var FACE_CDN = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.15/';
+var FACE_MATCH_LOCAL = 0.42;   // สองเฟรมที่เก็บต้องใกล้กัน (คนเดียวกัน นิ่งพอ)
+var Q = new URLSearchParams(location.search);
+function ls(k, v) { try { if (v === undefined) return localStorage.getItem(k); if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { return null; } }
+var LANG = Q.get('l') || ls('mc_lang') || 'th'; if (LANG !== 'my') LANG = 'th';
+var S = { token: ls('mc_token') || '', info: null, pos: null, posErr: '', stream: null, busy: false };
+function T(th, my) { return LANG === 'my' ? my : th; }
+function $(s) { return document.querySelector(s); }
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+function setMain(h) { $('#main').innerHTML = h; }
+function toggleLang() { LANG = LANG === 'my' ? 'th' : 'my'; ls('mc_lang', LANG); paintChrome(); route(); }
+function paintChrome() {
+  document.documentElement.lang = LANG === 'my' ? 'my' : 'th';
+  $('#langBtn').textContent = LANG === 'my' ? 'ไทย' : 'မြန်မာ';
+  $('#hTitle').textContent = T('much เช็คชื่อ', 'much ရုံးတက်စာရင်း');
+  $('#foot').innerHTML = S.token ? '<a href="#" onclick="logout();return false" style="color:inherit">' + T('ออกจากระบบ', 'အကောင့်မှ ထွက်ရန်') + '</a> · <a href="' + APP + '" style="color:inherit">' + T('เปิดแอป much', 'much အက်ပ် ဖွင့်ရန်') + '</a>' : '';
+}
+
+/* ---------- server */
+function call(api, payload) {
+  return fetch(API, { method: 'POST', body: JSON.stringify({ api: api, token: S.token, payload: payload || {} }), redirect: 'follow' })
+    .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .catch(function (e) { if (e && e.relogin !== undefined) throw e; throw new Error(T('เชื่อมต่อระบบไม่ได้ ตรวจอินเทอร์เน็ตแล้วลองใหม่', 'စနစ်နှင့် ချိတ်ဆက်၍မရပါ။ အင်တာနက်စစ်ပြီး ထပ်ကြိုးစားပါ')); })
+    .then(function (r) {
+      if (r.ok) return r.data;
+      if (r.relogin) { S.token = ''; ls('mc_token', null); var e = new Error(T('กรุณาเข้าสู่ระบบใหม่', 'ပြန်လည် ဝင်ရောက်ပါ')); e.relogin = true; throw e; }
+      throw new Error(r.error || 'error');
+    });
+}
+
+/* ---------- face scanner (เหมือนในแอป: face-api 1.7.15, TinyFaceDetector 320) */
+var FACE_P = null;
+function faceLoad() {
+  if (FACE_P) return FACE_P;
+  FACE_P = new Promise(function (res, rej) {
+    if (window.faceapi) return res();
+    var s = document.createElement('script'); s.src = FACE_CDN + 'dist/face-api.js'; s.onload = res;
+    s.onerror = function () { rej(new Error(T('โหลดตัวสแกนหน้าไม่ได้ ตรวจอินเทอร์เน็ตแล้วลองใหม่', 'မျက်နှာစကင်နာ ဖွင့်၍မရပါ။ အင်တာနက်စစ်ပြီး ထပ်ကြိုးစားပါ'))); };
+    document.head.appendChild(s);
+  }).then(function () {
+    var M = FACE_CDN + 'model/';
+    return Promise.all([faceapi.nets.tinyFaceDetector.loadFromUri(M), faceapi.nets.faceLandmark68Net.loadFromUri(M), faceapi.nets.faceRecognitionNet.loadFromUri(M)]);
+  }).then(function () {
+    try { var c = document.createElement('canvas'); c.width = c.height = 160; c.getContext('2d').fillRect(0, 0, 160, 160);
+      return faceapi.detectSingleFace(c, opts()).withFaceLandmarks().withFaceDescriptor().catch(function () { }); } catch (e) { }
+  });
+  FACE_P.catch(function () { FACE_P = null; });
+  return FACE_P;
+}
+function opts() { return new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.5 }); }
+function dist(a, b) { var s = 0; for (var i = 0; i < a.length; i++) { var d = a[i] - b[i]; s += d * d; } return Math.sqrt(s); }
+function avg(list) { var o = []; for (var i = 0; i < 128; i++) { var s = 0; list.forEach(function (v) { s += v[i]; }); o.push(s / list.length); } return o; }
+function camStart(video) {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return Promise.reject(new Error(T('เบราว์เซอร์นี้เปิดกล้องไม่ได้ ลองเปิดลิงก์นี้ใน Safari หรือ Chrome', 'ဤဘရောက်ဇာတွင် ကင်မရာ ဖွင့်၍မရပါ။ Safari သို့မဟုတ် Chrome တွင် ဖွင့်ပါ')));
+  return navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 640 } } }).then(function (st) {
+    S.stream = st; video.srcObject = st; video.setAttribute('playsinline', ''); video.muted = true;
+    return video.play().then(function () { return new Promise(function (r) { if (video.videoWidth) r(); else video.onloadedmetadata = function () { r(); }; }); });
+  }, function (e) {
+    throw new Error(e && e.name === 'NotAllowedError' ? T('ยังไม่อนุญาตให้ใช้กล้อง — กด "อนุญาต" หรือเปิดสิทธิ์กล้องให้เบราว์เซอร์ในตั้งค่ามือถือ แล้วโหลดหน้านี้ใหม่', 'ကင်မရာ ခွင့်မပြုရသေးပါ — "ခွင့်ပြု" ကိုနှိပ်ပါ သို့မဟုတ် ဖုန်း Settings တွင် ဘရောက်ဇာကို ကင်မရာခွင့်ပြုပြီး စာမျက်နှာကို ပြန်ဖွင့်ပါ') : T('เปิดกล้องไม่ได้ ', 'ကင်မရာ ဖွင့်၍မရပါ ') + (e && e.message || ''));
+  });
+}
+function camStop() { if (S.stream) { S.stream.getTracks().forEach(function (t) { t.stop(); }); S.stream = null; } }
+function snap(video) {
+  var w = video.videoWidth, h = video.videoHeight, k = Math.min(1, 560 / Math.max(w, h)), c = document.createElement('canvas');
+  c.width = Math.round(w * k); c.height = Math.round(h * k); c.getContext('2d').drawImage(video, 0, 0, c.width, c.height);
+  return c.toDataURL('image/jpeg', 0.72);
+}
+/** สแกนจากกล้องสด เก็บ need เฟรมที่นิ่งและใกล้กัน → { desc, descs, photo } */
+function scanLive(video, need, onMsg, onProg) {
+  var descs = [], photo = '', t0 = Date.now(), stop = false;
+  var p = new Promise(function (res, rej) {
+    function step() {
+      if (stop) return;
+      if (!S.stream) { rej(new Error('cancel')); return; }
+      if (Date.now() - t0 > 30000) { rej(new Error(T('สแกนไม่สำเร็จ ลองใหม่ในที่สว่าง ถอดแมส/แว่นกันแดด แล้วมองกล้องตรง ๆ', 'စကင်မအောင်မြင်ပါ။ အလင်းရောင်ရှိရာတွင် နှာခေါင်းစည်း/နေကာမျက်မှန်ချွတ်ပြီး ကင်မရာကို တည့်တည့်ကြည့်ပါ'))); return; }
+      faceapi.detectSingleFace(video, opts()).withFaceLandmarks().withFaceDescriptor().then(function (r) {
+        if (!r) { onMsg(T('มองกล้อง ให้เห็นหน้าเต็ม ๆ', 'ကင်မရာကို ကြည့်ပြီး မျက်နှာ အပြည့်မြင်ရအောင် ထားပါ')); return; }
+        var bw = r.detection.box.width / (video.videoWidth || 640);
+        if (bw < 0.2) { onMsg(T('ขยับหน้าเข้าใกล้อีกนิด', 'နည်းနည်း ပိုနီးအောင် ကပ်ပါ')); return; }
+        if (r.detection.score < 0.6) { onMsg(T('ถือนิ่ง ๆ ในที่สว่าง', 'အလင်းရောင်ရှိရာတွင် ငြိမ်ငြိမ်ကိုင်ပါ')); return; }
+        var d = Array.prototype.slice.call(r.descriptor);
+        if (descs.length && dist(descs[descs.length - 1], d) > FACE_MATCH_LOCAL) descs = [];
+        descs.push(d); if (!photo || descs.length === 1) photo = snap(video);
+        onProg(descs.length / need); onMsg(T('ถือนิ่ง ๆ …', 'ငြိမ်ငြိမ်ကိုင်ထားပါ …'));
+        if (descs.length >= need) { stop = true; res({ desc: avg(descs), descs: descs.slice(0, 5), photo: photo }); }
+      }).catch(function () { }).then(function () { if (!stop) setTimeout(step, 20); });
+    }
+    step();
+  });
+  p.cancel = function () { stop = true; };
+  return p;
+}
+
+/* ---------- GPS */
+function gpsStart() {
+  if (!navigator.geolocation) { S.posErr = T('เครื่องนี้อ่านตำแหน่งไม่ได้', 'ဤစက်သည် တည်နေရာ ဖတ်၍ မရပါ'); return; }
+  S.posErr = '';
+  navigator.geolocation.getCurrentPosition(function (p) {
+    S.pos = { lat: p.coords.latitude, lng: p.coords.longitude, acc: Math.round(p.coords.accuracy || 0), at: Date.now() }; S.posErr = ''; paintGps();
+  }, function (e) {
+    S.posErr = e && e.code === 1 ? T('ยังไม่อนุญาตให้ใช้ตำแหน่ง — เปิด GPS และอนุญาตตำแหน่งให้เบราว์เซอร์ (iPhone: ตั้งค่า > ความเป็นส่วนตัว > บริการหาตำแหน่ง > Safari > ขณะใช้แอป)', 'တည်နေရာ ခွင့်မပြုရသေး — GPS ဖွင့်ပြီး ဘရောက်ဇာကို တည်နေရာ ခွင့်ပြုပါ (iPhone: Settings > Privacy > Location Services > Safari > While Using the App)') :
+      T('หาตำแหน่งไม่ได้ ลองออกไปที่โล่งแล้วกดหาใหม่', 'တည်နေရာ ရှာမရပါ ကွင်းပြင်ထွက်ပြီး ပြန်ရှာပါ');
+    paintGps();
+  }, { enableHighAccuracy: true, timeout: 20000, maximumAge: 30000 });
+}
+function distM(a, b, c, d) { var R = 6371000, t = Math.PI / 180, x = (c - a) * t, y = (d - b) * t; var h = Math.sin(x / 2) * Math.sin(x / 2) + Math.cos(a * t) * Math.cos(c * t) * Math.sin(y / 2) * Math.sin(y / 2); return Math.round(2 * R * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h))); }
+function gpsState() {
+  if (!S.pos) return S.posErr ? { cls: 'bad', txt: S.posErr } : { cls: '', txt: T('กำลังหาตำแหน่ง…', 'တည်နေရာ ရှာနေသည်…'), wait: true };
+  var c = S.info.cfg, d = distM(S.pos.lat, S.pos.lng, c.lat, c.lng), ok = d - Math.min(S.pos.acc, 50) <= c.radius;
+  return ok ? { cls: 'ok', txt: T('อยู่ในร้าน · ห่าง ', 'ဆိုင်ထဲတွင် ရှိသည် · အကွာ ') + d + T(' ม.', ' မီ.'), ok: true } : { cls: 'bad', txt: T('ห่างร้าน ', 'ဆိုင်မှ အကွာ ') + d + T(' ม. (ต้องไม่เกิน ', ' မီ. (မကျော်ရ ') + c.radius + T(' ม.)', ' မီ.)') };
+}
+function paintGps() { var el = $('#gps'); if (!el || !S.info) return; var g = gpsState(); el.className = 'pill ' + g.cls; el.innerHTML = '📍 ' + esc(g.txt); var rb = $('#gpsRe'); if (rb) rb.classList.toggle('hide', !!(g.ok || g.wait)); }
+
+/* ---------- screens */
+function route() {
+  paintChrome();
+  if (!S.token) return viewLogin();
+  viewLoading();
+  call('punchInfo').then(function (d) { S.info = d; viewHome(); }).catch(function (e) { if (e.relogin) viewLogin(e.message); else viewError(e.message); });
+}
+function viewLoading() { setMain('<div class="card" style="text-align:center"><span class="spin"></span></div>'); }
+function viewError(m) { setMain('<div class="card"><div class="err">' + esc(m) + '</div><button class="btn primary" onclick="route()">' + T('ลองใหม่', 'ထပ်ကြိုးစားပါ') + '</button></div>'); }
+function viewLogin(msg) {
+  paintChrome();
+  setMain('<div class="card"><h1>' + T('เข้าสู่ระบบ', 'ဝင်ရောက်ရန်') + '</h1><div class="small muted">' + T('ใช้ชื่อผู้ใช้และรหัสผ่านเดียวกับแอป much · ล็อกอินครั้งเดียว ใช้ได้ 60 วัน', 'much အက်ပ်နှင့် တူညီသော အသုံးပြုသူအမည်နှင့် စကားဝှက် · တစ်ကြိမ်ဝင်ပြီး ရက် ၆၀ သုံးနိုင်သည်') + '</div>' +
+    '<form id="lf" autocomplete="on"><label class="f" for="lu">' + T('ชื่อผู้ใช้', 'အသုံးပြုသူအမည်') + '</label><input type="text" id="lu" name="username" autocomplete="username" autocapitalize="none" autocorrect="off" spellcheck="false" value="' + esc(Q.get('u') || ls('mc_user') || '') + '">' +
+    '<label class="f" for="lp">' + T('รหัสผ่าน', 'စကားဝှက်') + '</label><input type="password" id="lp" name="password" autocomplete="current-password">' +
+    '<div class="err" id="le">' + esc(msg || '') + '</div><button class="btn primary" id="lb" type="submit">' + T('เข้าสู่ระบบ', 'ဝင်ရောက်ရန်') + '</button></form></div>');
+  $('#lf').onsubmit = function (ev) {
+    ev.preventDefault(); if (S.busy) return;
+    var u = $('#lu').value.trim(), p = $('#lp').value;
+    if (!u || !p) { $('#le').textContent = T('กรอกชื่อผู้ใช้และรหัสผ่าน', 'အသုံးပြုသူအမည်နှင့် စကားဝှက် ဖြည့်ပါ'); return; }
+    S.busy = true; $('#lb').disabled = true; $('#lb').innerHTML = '<span class="spin"></span>'; $('#le').textContent = '';
+    faceLoad().catch(function () { });
+    call('login', { username: u, password: p }).then(function (d) {
+      S.busy = false; S.token = d.token; ls('mc_token', d.token); ls('mc_user', u); route();
+    }).catch(function (e) { S.busy = false; if (!$('#lb')) return; $('#lb').disabled = false; $('#lb').textContent = T('เข้าสู่ระบบ', 'ဝင်ရောက်ရန်'); $('#le').textContent = e.message; });
+  };
+  if (Q.get('u') || ls('mc_user')) setTimeout(function () { var p = $('#lp'); if (p) p.focus(); }, 50);
+}
+function viewHome() {
+  var d = S.info, act = d.canIn ? 'in' : d.canOut ? 'out' : '';
+  var st = d.inTime ? T('เข้างาน ', 'ဝင် ') + d.inTime + (d.outTime ? T(' · ออก ', ' · ထွက် ') + d.outTime : '') : T('ยังไม่ได้เช็คชื่อวันนี้', 'ယနေ့ မမှတ်ရသေးပါ');
+  var btn = act === 'in' ? '<button class="btn primary big" onclick="startPunch(\'in\')">🙂 ' + T('สแกนหน้าเข้างาน', 'မျက်နှာဖြင့် အလုပ်ဝင် မှတ်ရန်') + '</button>' :
+    act === 'out' ? '<button class="btn orange big" onclick="startPunch(\'out\')">🙂 ' + T('สแกนหน้าออกงาน', 'မျက်နှာဖြင့် အလုပ်ထွက် မှတ်ရန်') + '</button>' :
+    '<div class="done"><div class="ico">✓</div><h2>' + T('วันนี้เช็คชื่อครบแล้ว', 'ယနေ့ မှတ်တမ်း ပြည့်စုံပါပြီ') + '</h2><div class="muted">' + T('ขอบคุณค่ะ', 'ကျေးဇူးတင်ပါသည်') + '</div></div>';
+  setMain('<div class="card"><div class="tiny">' + esc(d.today) + T(' · เข้างาน ', ' · အလုပ်ဝင် ') + esc(d.cfg.start) + T(' เลิก ', ' ထွက် ') + esc(d.cfg.end) + '</div><h1>' + esc(d.name) + '</h1><div class="muted small">' + esc(st) + '</div>' +
+    (act ? '<div class="row" style="margin-top:10px"><span class="pill" id="gps"></span><button class="lang hide" id="gpsRe" onclick="S.pos=null;gpsStart();paintGps()">' + T('หาตำแหน่งใหม่', 'တည်နေရာ ပြန်ရှာ') + '</button></div>' : '') +
+    btn + '</div>' + (act ? '<div class="tiny" style="text-align:center;margin-top:10px">' + T('ครั้งแรกจะโหลดตัวสแกนหน้า ~7MB หลังจากนั้นเปิดได้ทันที', 'ပထမဆုံးအကြိမ် မျက်နှာစကင်နာ ~7MB ဒေါင်းလုဒ်ဆွဲပါမည်၊ နောက်ပိုင်း ချက်ချင်းဖွင့်နိုင်သည်') + '</div>' : ''));
+  if (act) { if (!S.pos) gpsStart(); paintGps(); faceLoad().catch(function () { }); }
+}
+function scanScreen(title, sub) {
+  setMain('<div class="card" style="text-align:center"><h1>' + title + '</h1><div class="small muted">' + sub + '</div>' +
+    '<div class="cam" id="cam"><video id="vid" playsinline muted autoplay></video><div class="ring"><svg viewBox="0 0 100 100"><circle class="bg" cx="50" cy="50" r="47"/><circle class="fg" id="prog" cx="50" cy="50" r="47" stroke-dasharray="295.3" stroke-dashoffset="295.3"/></svg></div></div>' +
+    '<div class="status" id="msg"><span class="spin"></span></div><div class="row" style="justify-content:center"><span class="pill" id="gps"></span></div><div class="err" id="err"></div><div id="acts"></div>' +
+    '<button class="btn ghost" onclick="cancelScan()">' + T('ยกเลิก', 'ပယ်ဖျက်ရန်') + '</button></div>');
+  paintGps();
+}
+function msg(t) { var m = $('#msg'); if (m) m.innerHTML = t; }
+function prog(f) { var c = $('#prog'); if (c) c.setAttribute('stroke-dashoffset', String(295.3 * (1 - Math.min(1, f)))); }
+function cancelScan() { if (S.scan) S.scan.cancel(); camStop(); S.busy = false; viewHome(); }
+function startPunch(kind) {
+  if (S.busy) return;
+  if (kind === 'out' && S.info.now && S.info.cfg.end && S.info.now < S.info.cfg.end && !confirm(T('ยังไม่ถึงเวลาเลิกงาน (' + S.info.cfg.end + ') ยืนยันลงเวลาออก?', 'အလုပ်ဆင်းချိန် (' + S.info.cfg.end + ') မရောက်သေးပါ။ အလုပ်ထွက် မှတ်မည်လား?'))) return;
+  if (S.info.cfg.face && !S.info.face) return viewRegister(kind);
+  runScan(kind, false);
+}
+function runScan(kind, isReg, tries) {
+  tries = tries || 0;
+  S.busy = true;
+  scanScreen(isReg ? T('ลงทะเบียนใบหน้า', 'မျက်နှာမှတ်ပုံတင်ရန်') : kind === 'in' ? T('เช็คชื่อเข้างาน', 'အလုပ်ဝင် မှတ်ရန်') : T('ลงเวลาออกงาน', 'အလုပ်ထွက် မှတ်ရန်'),
+    T('มองกล้องตรง ๆ ระบบจะจับหน้าให้เอง', 'ကင်မရာကို တည့်တည့်ကြည့်ပါ၊ စနစ်က အလိုအလျောက် ဖမ်းယူပါမည်'));
+  var video = $('#vid');
+  msg(T('กำลังเปิดกล้อง…', 'ကင်မရာ ဖွင့်နေသည်…'));
+  camStart(video).then(function () {
+    msg(FACE_P && window.faceapi && faceapi.nets.faceRecognitionNet.isLoaded ? T('มองกล้อง', 'ကင်မရာကို ကြည့်ပါ') : T('กำลังโหลดตัวสแกนหน้า… (ครั้งแรกนานหน่อย)', 'မျက်နှာစကင်နာ ဖွင့်နေသည်… (ပထမအကြိမ် ကြာနိုင်သည်)'));
+    return faceLoad();
+  }).then(function () {
+    S.scan = scanLive(video, isReg ? 3 : 2, msg, prog);
+    return S.scan;
+  }).then(function (r) {
+    $('#cam').classList.add('ok'); prog(1);
+    if (navigator.vibrate) try { navigator.vibrate(40); } catch (e) { }
+    camStop();
+    if (isReg) {
+      msg('<span class="spin"></span> ' + T('กำลังบันทึกใบหน้า…', 'မျက်နှာ သိမ်းနေသည်…'));
+      return call('registerFace', { consent: true, descriptors: r.descs, photo: r.photo }).then(function () { S.info.face = true; return submit(kind, r, false, tries); });
+    }
+    return submit(kind, r, false, tries);
+  }).catch(function (e) {
+    camStop(); S.busy = false;
+    if (e && e.message === 'cancel') return;
+    if (e && e.relogin) return viewLogin(e.message);
+    if (!$('#err')) return;
+    msg(''); $('#err').textContent = e.message;
+    $('#acts').innerHTML = '<button class="btn primary" onclick="runScan(\'' + kind + '\',' + isReg + ')">' + T('ลองใหม่', 'ထပ်ကြိုးစားပါ') + '</button>';
+  });
+}
+function waitGps(maxMs) {
+  var t0 = Date.now();
+  return new Promise(function (res) { (function w() { var g = gpsState(); if (!g.wait || Date.now() - t0 > maxMs) res(g); else setTimeout(w, 250); })(); });
+}
+function submit(kind, r, review, tries) {
+  msg('<span class="spin"></span> ' + T('กำลังหาตำแหน่ง…', 'တည်နေရာ ရှာနေသည်…'));
+  if (!S.pos && !S.posErr) gpsStart();
+  return waitGps(20000).then(function (g) {
+    if (!S.pos) throw new Error(g.txt || T('หาตำแหน่งไม่ได้', 'တည်နေရာ ရှာမရပါ'));
+    msg('<span class="spin"></span> ' + T('กำลังบันทึก…', 'သိမ်းနေသည်…'));
+    var q = { lat: S.pos.lat, lng: S.pos.lng, acc: S.pos.acc, photo: r.photo, face: r.desc, faceLive: true, faceFallback: !!review };
+    return call(kind === 'in' ? 'checkIn' : 'checkOut', q);
+  }).then(function (res) {
+    S.busy = false;
+    if (res.faceMismatch) {
+      if (tries < 1) { msg(T('ยังไม่ตรง ลองอีกครั้ง…', 'မကိုက်ညီသေးပါ ထပ်စမ်းနေသည်…')); return setTimeout(function () { runScan(kind, false, tries + 1); }, 600); }
+      S.lastScan = r;
+      msg(''); $('#err').textContent = T('ใบหน้าไม่ตรงกับที่ลงทะเบียนไว้ ลองใหม่ในที่สว่าง หรือส่งรูปให้หัวหน้าตรวจ', 'မှတ်ပုံတင်ထားသော မျက်နှာနှင့် မကိုက်ညီပါ။ အလင်းရောင်ရှိရာတွင် ပြန်စကင်ဖတ်ပါ သို့မဟုတ် အကြီးအကဲထံ စစ်ရန်ပို့ပါ');
+      $('#acts').innerHTML = '<button class="btn primary" onclick="runScan(\'' + kind + '\',false)">' + T('สแกนใหม่', 'ပြန်စကင်ဖတ်ရန်') + '</button><button class="btn" onclick="sendReview(\'' + kind + '\')">' + T('ส่งรูปนี้ให้หัวหน้าตรวจ', 'ဤဓာတ်ပုံကို အကြီးအကဲထံ စစ်ရန်ပို့မည်') + '</button>';
+      return;
+    }
+    viewDone(res);
+  }).catch(function (e) {
+    S.busy = false;
+    if (e.relogin) return viewLogin(e.message);
+    if (!$('#err')) return;
+    msg(''); $('#err').textContent = e.message; S.lastScan = r;
+    $('#acts').innerHTML = '<button class="btn primary" onclick="retrySubmit(\'' + kind + '\')">' + T('ลองส่งอีกครั้ง', 'ထပ်ပို့ရန်') + '</button>';
+  });
+}
+function retrySubmit(kind) { if (S.busy || !S.lastScan) return; S.busy = true; $('#err').textContent = ''; $('#acts').innerHTML = ''; S.pos = null; gpsStart(); submit(kind, S.lastScan, false, 1); }
+function sendReview(kind) { if (S.busy || !S.lastScan) return; S.busy = true; $('#err').textContent = ''; $('#acts').innerHTML = ''; submit(kind, S.lastScan, true, 1); }
+function viewDone(r) {
+  var late = r.kind === 'in' && r.late;
+  setMain('<div class="card"><div class="done' + (late ? ' late' : '') + '"><div class="ico">✓</div><h2>' + (r.kind === 'in' ? T('เช็คชื่อเข้างานแล้ว', 'အလုပ်ဝင် မှတ်ပြီးပါပြီ') : T('ลงเวลาออกงานแล้ว', 'အလုပ်ထွက် မှတ်ပြီးပါပြီ')) + '</h2>' +
+    '<div style="font-size:34px;font-weight:700">' + esc(r.time) + '</div>' + (late ? '<div class="pill warn" style="margin-top:6px">' + T('สาย', 'နောက်ကျ') + '</div>' : '') +
+    '<div class="muted small" style="margin-top:6px">' + esc(S.info.name) + T(' · ห่างร้าน ', ' · ဆိုင်မှ အကွာ ') + esc(r.dist) + T(' ม.', ' မီ.') + '</div></div>' +
+    '<button class="btn" onclick="route()">' + T('กลับหน้าแรก', 'ပင်မစာမျက်နှာ') + '</button></div>');
+}
+function viewRegister(kind) {
+  setMain('<div class="card"><h1>' + T('ลงทะเบียนใบหน้า', 'မျက်နှာမှတ်ပုံတင်ရန်') + '</h1><p class="small">' + T('ครั้งแรกต้องลงทะเบียนใบหน้าก่อน เพื่อให้ระบบจำได้ว่าเป็นคุณตอนเช็คชื่อ', 'ရုံးတက်စာရင်းသွင်းချိန်တွင် သင်ဖြစ်ကြောင်း စနစ်က မှတ်မိစေရန် ပထမဆုံး မျက်နှာမှတ်ပုံတင်ရပါမည်') + '</p>' +
+    '<div class="tiny">' + T('ระบบเก็บเฉพาะค่าลักษณะใบหน้า (เป็นตัวเลข ไม่ใช่รูป) ไว้เทียบตอนเช็คชื่อ และเก็บรูปตอนลงทะเบียน 1 รูปให้แอดมินตรวจ ใช้เพื่อการเช็คชื่อเท่านั้น แอดมินลบได้ทุกเมื่อ', 'စနစ်သည် မျက်နှာလက္ခဏာတန်ဖိုး (ဂဏန်းများသာ၊ ဓာတ်ပုံမဟုတ်) ကိုသာ ရုံးတက်စာရင်းစစ်ရန် သိမ်းပြီး မှတ်ပုံတင်ချိန် ဓာတ်ပုံ ၁ ပုံကို အက်ဒမင်စစ်ရန် သိမ်းသည်။ ရုံးတက်စာရင်းအတွက်သာ အသုံးပြုပြီး အက်ဒမင်က အချိန်မရွေး ဖျက်နိုင်သည်') + '</div>' +
+    '<label class="consent"><input type="checkbox" id="cons"><span>' + T('ฉันยินยอมให้เก็บข้อมูลใบหน้าเพื่อใช้เช็คชื่อ', 'ရုံးတက်စာရင်းသွင်းရန်အတွက် ကျွန်ုပ်၏ မျက်နှာအချက်အလက်ကို သိမ်းဆည်းခွင့်ပြုပါသည်') + '</span></label>' +
+    '<div class="err" id="cerr"></div><button class="btn primary" onclick="if(!$(\'#cons\').checked){$(\'#cerr\').textContent=T(\'กดยินยอมก่อนลงทะเบียน\',\'မှတ်ပုံမတင်မီ သဘောတူကြောင်း အမှန်ခြစ်ပါ\');return}runScan(\'' + kind + '\',true)">' + T('เริ่มสแกนลงทะเบียน', 'မှတ်ပုံတင်ရန် စကင်စတင်မည်') + '</button>' +
+    '<button class="btn ghost" onclick="viewHome()">' + T('ยกเลิก', 'ပယ်ဖျက်ရန်') + '</button></div>');
+}
+function logout() { var t = S.token; S.token = ''; ls('mc_token', null); if (t) fetch(API, { method: 'POST', body: JSON.stringify({ api: 'logout', token: t }) }).catch(function () { }); route(); }
+document.addEventListener('visibilitychange', function () { if (document.hidden) { if (S.scan) S.scan.cancel(); if (S.stream) { camStop(); S.busy = false; if (S.info) viewHome(); } } else if (S.info && !S.busy) { S.pos = null; route(); } });
+route();
+</script>
+</body>
+</html>
