@@ -1,0 +1,30 @@
+name: sync-app
+# ดึงหน้าแอปล่าสุดจาก Apps Script (/exec?raw=web) มาเป็น index.html — กด Run workflow หลังอัปเดตหลังบ้าน หรือรอรอบอัตโนมัติ
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 * * * *'
+permissions:
+  contents: write
+  pages: write
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch app
+        run: |
+          curl -sfL --retry 3 --max-time 120 "https://script.google.com/macros/s/AKfycbxm7E3cd74m2vPfRfgv21yOJHj4bFNCx6yhYqUn3fgDASt8yFFnxJV11W15QvhqgnH4/exec?raw=web" -o app.new.html
+          grep -q 'window.MUCH_BUILD' app.new.html
+          test $(wc -c < app.new.html) -gt 100000
+          mv app.new.html index.html
+          printf '%s' '{"name":"much","short_name":"much","start_url":"./","scope":"./","display":"standalone","background_color":"#FBF5EC","theme_color":"#946B2D","icons":[{"src":"icon-192.png","sizes":"192x192","type":"image/png"},{"src":"icon-512.png","sizes":"512x512","type":"image/png"}]}' > manifest.json
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html manifest.json
+          git diff --cached --quiet || (git commit -m "sync app $(grep -o "MUCH_BUILD=\"[^\"]*\"" index.html | head -1)" && git push)
+      - name: Rebuild Pages
+        run: |
+          curl -s -X POST -H "Authorization: Bearer ${{ github.token }}" -H "Accept: application/vnd.github+json" "https://api.github.com/repos/${{ github.repository }}/pages/builds" || true
