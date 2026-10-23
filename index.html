@@ -10,7 +10,7 @@
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" href="icon-192.png">
 <link rel="preconnect" href="https://script.google.com" crossorigin>
-<script>window.MUCH_API="https://script.google.com/macros/s/AKfycbxm7E3cd74m2vPfRfgv21yOJHj4bFNCx6yhYqUn3fgDASt8yFFnxJV11W15QvhqgnH4/exec";window.MUCH_BUILD="v22";</script>
+<script>window.MUCH_API="https://script.google.com/macros/s/AKfycbxm7E3cd74m2vPfRfgv21yOJHj4bFNCx6yhYqUn3fgDASt8yFFnxJV11W15QvhqgnH4/exec";window.MUCH_BUILD="v23";</script>
 
 
 <meta charset="utf-8">
@@ -373,9 +373,29 @@ function initials(n) { n = String(n || '?').trim(); return n.slice(0, 1).toUpper
 
  
 var WEB = !!(window.MUCH_API && !(window.google && google.script && google.script.run));
-function webCall(action, payload) {
-  return fetch(window.MUCH_API, { method: 'POST', body: JSON.stringify({ api: action, token: S.token, payload: payload || {}, app: 'main' }), redirect: 'follow' })
+ 
+var READ_ACTIONS = ('workHome teamHome getMenu getPage listIngredients priceHistory costReport listUsers listClips notifs myTasks listTasks ' +
+  'listLeaves roster myAttendance attendanceDay attendanceMonth checklist checklistMonth stockCount stockItem stockMonth moveReport ' +
+  'salesDay salesMonth listBills recon reconMonth gposStock gposMap closePhotos lineStatus').split(' ');
+var NO_CACHE = ['getPhoto', 'downloadImage', 'storage', 'getLogs', 'bootstrap', 'ping', 'needsSetup', 'login'];
+function isRead(a) { return READ_ACTIONS.indexOf(a) >= 0; }
+function webFetch(action, payload, ms) {
+  var ctl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+  var timer = ctl ? setTimeout(function () { ctl.abort(); }, ms) : null;
+  var opt = { method: 'POST', body: JSON.stringify({ api: action, token: S.token, payload: payload || {}, app: 'main' }), redirect: 'follow' };
+  if (ctl) opt.signal = ctl.signal;
+  return fetch(window.MUCH_API, opt)
     .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(function (x) { clearTimeout(timer); return x; }, function (e) { clearTimeout(timer); throw e; });
+}
+function webCall(action, payload) {
+  var safe = isRead(action) || NO_CACHE.indexOf(action) >= 0;
+  var ms = safe ? 20000 : 60000;
+  return webFetch(action, payload, ms)
+    .catch(function (e) {
+      if (!safe) { e.unsure = true; throw e; }
+      return new Promise(function (r) { setTimeout(r, 700); }).then(function () { return webFetch(action, payload, ms); });
+    })
     .then(function (res) {
       if (res && res.v && window.MUCH_BUILD && res.v !== window.MUCH_BUILD) {
         var k = 'much_reload_' + res.v, done = null;
@@ -385,7 +405,32 @@ function webCall(action, payload) {
       return res;
     });
 }
+ 
+var RC = {};
+function uiBusy() {
+  var a = document.activeElement, t = a && a.tagName;
+  return !!(t === 'INPUT' || t === 'TEXTAREA' || t === 'SELECT' || $('#overlay') || _lc || /^#\/(edit|settings|stockitems|sales\/)/.test(location.hash));
+}
+function redraw() { var y = window.scrollY; route(); window.scrollTo(0, y); }
 function call(action, payload, opts) {
+  opts = opts || {};
+  if (WEB && !isRead(action) && NO_CACHE.indexOf(action) < 0) RC = {};
+  if (!WEB || !isRead(action) || opts.fresh) return call0(action, payload, opts);
+  var key = action + '|' + JSON.stringify(payload || {}), hit = RC[key], h0 = location.hash;
+  function put(d) { RC[key] = { t: Date.now(), s: JSON.stringify(d === undefined ? null : d) }; return JSON.parse(RC[key].s); }
+  if (hit && Date.now() - hit.t < 600000) {
+    if (Date.now() - hit.t > 4000 && !hit.busy) {
+      hit.busy = true;
+      call0(action, payload, { silent: true, quiet: true, bg: true }).then(function (d) {
+        var old = hit.s; put(d);
+        if (RC[key].s !== old && location.hash === h0 && !uiBusy()) redraw();
+      }).catch(function () { hit.busy = false; });
+    }
+    return Promise.resolve(JSON.parse(hit.s));
+  }
+  return call0(action, payload, opts).then(put);
+}
+function call0(action, payload, opts) {
   opts = opts || {};
   if (!opts.silent) loading(true);
   if (WEB) return webCall(action, payload).then(function (res) {
@@ -397,7 +442,8 @@ function call(action, payload, opts) {
     throw new Error(msg);
   }, function (e) {
     if (!opts.silent) loading(false);
-    toast((LANG === 'my' ? 'ချိတ်ဆက်၍ မရပါ ထပ်စမ်းကြည့်ပါ' : 'เชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง'), true);
+    if (!opts.bg) toast(e && e.unsure ? (LANG === 'my' ? 'အင်တာနက် နှေးနေသည် · သိမ်းပြီးသားဖြစ်နိုင်သည် ပြန်စစ်ပြီးမှ ထပ်နှိပ်ပါ' : 'เน็ตช้า/ระบบไม่ตอบ · อาจบันทึกไปแล้ว ตรวจดูก่อนกดซ้ำ')
+      : (LANG === 'my' ? 'ချိတ်ဆက်၍ မရပါ ထပ်စမ်းကြည့်ပါ' : 'เชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง'), true);
     throw e;
   });
   return new Promise(function (resolve, reject) {
@@ -492,13 +538,14 @@ function renderLogin(err) {
     if (!u || !p) { $('#lerr').textContent = (LANG === 'my' ? 'အသုံးပြုသူအမည်နှင့် စကားဝှက် ဖြည့်ပါ' : 'กรอกชื่อผู้ใช้และรหัสผ่าน'); return; }
     if (S.loggingIn) return;
     S.loggingIn = true;
-    var btn = $('#loginForm button.primary'); if (btn) btn.disabled = true;
+    var btn = $('#loginForm button.primary'), btnHtml = btn ? btn.innerHTML : '';
+    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="ti ti-loader-2"></i>' + (LANG === 'my' ? 'ဝင်ရောက်နေသည်…' : 'กำลังเข้าสู่ระบบ…'); }
     $('#lerr').textContent = '';
     call('login', { username: u, password: p }, { quiet: true }).then(function (d) {
       S.loggingIn = false;
-      S.token = d.token; store('much_token', d.token); boot();
+      S.token = d.token; store('much_token', d.token); boot(d.boot);
     }).catch(function (e) {
-      S.loggingIn = false; if (btn) btn.disabled = false;
+      S.loggingIn = false; if (btn) { btn.disabled = false; btn.innerHTML = btnHtml; }
       if (e.message !== 'relogin' && $('#lerr')) $('#lerr').textContent = e.message;
     });
   };
@@ -532,17 +579,32 @@ function renderRegister(done) {
       .catch(function (err) { $('#rerr').textContent = err.message; });
   };
 }
-function logoutLocal() { S.token = null; store('much_token', null); S.me = null; S.can = {}; applyProtection(); renderLogin(); }
+function logoutLocal() { S.token = null; store('much_token', null); store('much_boot', null); RC = {}; S.me = null; S.can = {}; applyProtection(); renderLogin(); }
 function logout() { call('logout', {}, { silent: true }).catch(function () { }); logoutLocal(); }
 
-function boot() {
+function applyBoot(d) {
+  S.work = d.work || null; S.workBoot = !!d.work;
+  S.me = d.me; S.can = d.can; S.menus = d.menus; S.pages = d.pages; S.categories = d.categories; S.target = d.target; S.overheadPct = d.overheadPct; S.team = d.team;
+  S.appName = d.appName || (LANG === 'my' ? 'much မီးဖိုချောင်လက်စွဲ' : 'much คู่มือครัว');
+  applyProtection();
+}
+function bootKey() { return String(S.token || '').slice(-12); }
+function saveBoot(d) { if (WEB) try { store('much_boot', JSON.stringify({ k: bootKey(), d: d })); } catch (e) { } }
+function goStart() { if (!location.hash || location.hash === '#' || location.hash === '#/home') location.hash = '#/work'; else route(); }
+function boot(pre) {
+  if (pre && pre.me) { saveBoot(pre); applyBoot(pre); goStart(); return Promise.resolve(); }
+  var c = null; try { c = JSON.parse(store('much_boot') || 'null'); } catch (e) { }
+  if (WEB && c && c.k === bootKey() && c.d && c.d.me) {
+    
+    var old = JSON.stringify(c.d); applyBoot(c.d); goStart();
+    return call('bootstrap', {}, { silent: true, quiet: true, bg: true }).then(function (d) {
+      saveBoot(d); applyBoot(d);
+      if (JSON.stringify(d) !== old && !uiBusy()) redraw();
+    }).catch(function () { });
+  }
   renderSkeleton();
   return call('bootstrap', {}, { silent: true }).then(function (d) {
-    S.work = d.work || null; S.workBoot = !!d.work;
-    S.me = d.me; S.can = d.can; S.menus = d.menus; S.pages = d.pages; S.categories = d.categories; S.target = d.target; S.overheadPct = d.overheadPct; S.team = d.team;
-    S.appName = d.appName || (LANG === 'my' ? 'much မီးဖိုချောင်လက်စွဲ' : 'much คู่มือครัว');
-    applyProtection();
-    if (!location.hash || location.hash === '#' || location.hash === '#/home') location.hash = '#/work'; else route();
+    saveBoot(d); applyBoot(d); goStart();
   }).catch(function (e) { if (e.message !== 'relogin') renderLogin(e.message); });
 }
 function refreshCatalog() {
@@ -2962,6 +3024,7 @@ function viewGposHub() {
 (function start() {
   S.token = store('much_token');
   if (S.token) { boot(); return; }
+  if (WEB) { renderLogin(); call('needsSetup', {}, { silent: true, quiet: true, bg: true }).then(function (need) { if (need) renderFirstAdmin(); }).catch(function () { }); return; }
   call('needsSetup', {}, { silent: true, quiet: true }).then(function (need) { if (need) renderFirstAdmin(); else renderLogin(); }).catch(function () { renderLogin(); });
 })();
 </script>
