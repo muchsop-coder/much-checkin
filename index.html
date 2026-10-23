@@ -10,7 +10,7 @@
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" href="icon-192.png">
 <link rel="preconnect" href="https://script.google.com" crossorigin>
-<script>window.MUCH_API="https://script.google.com/macros/s/AKfycbxm7E3cd74m2vPfRfgv21yOJHj4bFNCx6yhYqUn3fgDASt8yFFnxJV11W15QvhqgnH4/exec";window.MUCH_BUILD="v23";</script>
+<script>window.MUCH_API="https://script.google.com/macros/s/AKfycbxm7E3cd74m2vPfRfgv21yOJHj4bFNCx6yhYqUn3fgDASt8yFFnxJV11W15QvhqgnH4/exec";window.MUCH_BUILD="v24";</script>
 
 
 <meta charset="utf-8">
@@ -379,10 +379,12 @@ var READ_ACTIONS = ('workHome teamHome getMenu getPage listIngredients priceHist
   'salesDay salesMonth listBills recon reconMonth gposStock gposMap closePhotos lineStatus').split(' ');
 var NO_CACHE = ['getPhoto', 'downloadImage', 'storage', 'getLogs', 'bootstrap', 'ping', 'needsSetup', 'login'];
 function isRead(a) { return READ_ACTIONS.indexOf(a) >= 0; }
-function webFetch(action, payload, ms) {
+function webFetch(action, payload, ms, rid) {
   var ctl = typeof AbortController !== 'undefined' ? new AbortController() : null;
   var timer = ctl ? setTimeout(function () { ctl.abort(); }, ms) : null;
-  var opt = { method: 'POST', body: JSON.stringify({ api: action, token: S.token, payload: payload || {}, app: 'main' }), redirect: 'follow' };
+  var body = { api: action, token: S.token, payload: payload || {}, app: 'main' };
+  if (rid) body.rid = rid;
+  var opt = { method: 'POST', body: JSON.stringify(body), redirect: 'follow' };
   if (ctl) opt.signal = ctl.signal;
   return fetch(window.MUCH_API, opt)
     .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
@@ -390,11 +392,13 @@ function webFetch(action, payload, ms) {
 }
 function webCall(action, payload) {
   var safe = isRead(action) || NO_CACHE.indexOf(action) >= 0;
-  var ms = safe ? 20000 : 60000;
-  return webFetch(action, payload, ms)
-    .catch(function (e) {
-      if (!safe) { e.unsure = true; throw e; }
-      return new Promise(function (r) { setTimeout(r, 700); }).then(function () { return webFetch(action, payload, ms); });
+  var ms = safe ? 20000 : 40000;
+  
+  var rid = safe ? '' : (Date.now().toString(36) + Math.random().toString(36).slice(2, 10)).replace(/[^a-z0-9]/g, '');
+  return webFetch(action, payload, ms, rid)
+    .catch(function () {
+      return new Promise(function (r) { setTimeout(r, safe ? 700 : 1500); }).then(function () { return webFetch(action, payload, ms, rid); })
+        .catch(function (e2) { if (!safe) e2.unsure = true; throw e2; });
     })
     .then(function (res) {
       if (res && res.v && window.MUCH_BUILD && res.v !== window.MUCH_BUILD) {
@@ -406,7 +410,9 @@ function webCall(action, payload) {
     });
 }
  
-var RC = {};
+var RC = {}, RCG = 0;
+function rcClear() { RC = {}; RCG++; }
+var PUBLIC_ACTIONS = ['login', 'register', 'needsSetup', 'firstAdmin', 'ping'];
 function uiBusy() {
   var a = document.activeElement, t = a && a.tagName;
   return !!(t === 'INPUT' || t === 'TEXTAREA' || t === 'SELECT' || $('#overlay') || _lc || /^#\/(edit|settings|stockitems|sales\/)/.test(location.hash));
@@ -414,16 +420,21 @@ function uiBusy() {
 function redraw() { var y = window.scrollY; route(); window.scrollTo(0, y); }
 function call(action, payload, opts) {
   opts = opts || {};
-  if (WEB && !isRead(action) && NO_CACHE.indexOf(action) < 0) RC = {};
+  if (WEB && !S.token && PUBLIC_ACTIONS.indexOf(action) < 0) return Promise.reject(new Error('relogin')); 
+  if (WEB && !isRead(action) && NO_CACHE.indexOf(action) < 0) rcClear();
   if (!WEB || !isRead(action) || opts.fresh) return call0(action, payload, opts);
-  var key = action + '|' + JSON.stringify(payload || {}), hit = RC[key], h0 = location.hash;
-  function put(d) { RC[key] = { t: Date.now(), s: JSON.stringify(d === undefined ? null : d) }; return JSON.parse(RC[key].s); }
+  var key = action + '|' + JSON.stringify(payload || {}), hit = RC[key], h0 = location.hash, g0 = RCG;
+  function put(d) {
+    var s0 = JSON.stringify(d === undefined ? null : d);
+    if (g0 === RCG) RC[key] = { t: Date.now(), s: s0 }; 
+    return JSON.parse(s0);
+  }
   if (hit && Date.now() - hit.t < 600000) {
     if (Date.now() - hit.t > 4000 && !hit.busy) {
       hit.busy = true;
       call0(action, payload, { silent: true, quiet: true, bg: true }).then(function (d) {
         var old = hit.s; put(d);
-        if (RC[key].s !== old && location.hash === h0 && !uiBusy()) redraw();
+        if (RC[key] && RC[key].s !== old && g0 === RCG && location.hash === h0 && !uiBusy()) redraw();
       }).catch(function () { hit.busy = false; });
     }
     return Promise.resolve(JSON.parse(hit.s));
@@ -433,10 +444,15 @@ function call(action, payload, opts) {
 function call0(action, payload, opts) {
   opts = opts || {};
   if (!opts.silent) loading(true);
+  var tok0 = S.token;
   if (WEB) return webCall(action, payload).then(function (res) {
     if (!opts.silent) loading(false);
     if (res && res.ok) return res.data;
-    if (res && res.relogin) { logoutLocal(); toast((LANG === 'my' ? 'ပြန်လည် ဝင်ရောက်ပါ' : 'กรุณาเข้าสู่ระบบใหม่'), true); throw new Error('relogin'); }
+    if (res && res.relogin) {
+      
+      if (tok0 && tok0 === S.token) { logoutLocal(); toast((LANG === 'my' ? 'ပြန်လည် ဝင်ရောက်ပါ' : 'กรุณาเข้าสู่ระบบใหม่'), true); }
+      throw new Error('relogin');
+    }
     var msg = D((res && res.error) || (LANG === 'my' ? 'အမှားတစ်ခု ဖြစ်သွားသည်' : 'เกิดข้อผิดพลาด'));
     if (!opts.quiet) toast(msg, true);
     throw new Error(msg);
@@ -579,7 +595,7 @@ function renderRegister(done) {
       .catch(function (err) { $('#rerr').textContent = err.message; });
   };
 }
-function logoutLocal() { S.token = null; store('much_token', null); store('much_boot', null); RC = {}; S.me = null; S.can = {}; applyProtection(); renderLogin(); }
+function logoutLocal() { S.token = null; store('much_token', null); store('much_boot', null); rcClear(); S.me = null; S.can = {}; applyProtection(); renderLogin(); }
 function logout() { call('logout', {}, { silent: true }).catch(function () { }); logoutLocal(); }
 
 function applyBoot(d) {
