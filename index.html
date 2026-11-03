@@ -10,7 +10,7 @@
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" href="icon-192.png">
 <link rel="preconnect" href="https://script.google.com" crossorigin>
-<script>window.MUCH_API="https://script.google.com/macros/s/AKfycbxm7E3cd74m2vPfRfgv21yOJHj4bFNCx6yhYqUn3fgDASt8yFFnxJV11W15QvhqgnH4/exec";window.MUCH_BUILD="v24";</script>
+<script>window.MUCH_API="https://script.google.com/macros/s/AKfycbxm7E3cd74m2vPfRfgv21yOJHj4bFNCx6yhYqUn3fgDASt8yFFnxJV11W15QvhqgnH4/exec";window.MUCH_BUILD="v25";</script>
 
 
 <meta charset="utf-8">
@@ -1240,8 +1240,9 @@ function showHist(id) {
 }
 function editIng(id) {
   var i = id ? S.ings.filter(function (x) { return x.id === id; })[0] : { name: '', group: 'อาหาร', type: '', brand: '', store: '', buyQty: '', buyUnit: '', price: '', baseUnit: 'กรัม', baseQty: '', yieldPct: 100 };
+  S.ingImg = undefined;
   var f = function (k, label, ph, mode) { return '<label class="field"><span>' + label + '</span><input class="input" id="g_' + k + '" ' + (mode ? 'inputmode="decimal"' : '') + ' placeholder="' + esc(ph || '') + '" value="' + esc(i[k]) + '"></label>'; };
-  var body = f('name', (LANG === 'my' ? 'ကုန်ကြမ်းအမည် *' : 'ชื่อวัตถุดิบ *')) + '<div class="row" style="gap:10px">' + '<div class="grow">' + f('group', (LANG === 'my' ? 'အမျိုးအစား' : 'หมวด'), (LANG === 'my' ? 'အစားအစာ / အချိုရည် / အသုံးအဆောင်' : 'อาหาร / เครื่องดื่ม / ของใช้')) + '</div><div class="grow">' + f('type', (LANG === 'my' ? 'အမျိုးအစား' : 'ประเภท'), (LANG === 'my' ? 'အသား / ဟင်းသီးဟင်းရွက် / ဟင်းခတ်' : 'เนื้อสัตว์ / ผัก / เครื่องปรุง')) + '</div></div>' +
+  var body = f('name', (LANG === 'my' ? 'ကုန်ကြမ်းအမည် *' : 'ชื่อวัตถุดิบ *')) + ingPhotoHtml(i) + '<div class="row" style="gap:10px">' + '<div class="grow">' + f('group', (LANG === 'my' ? 'အမျိုးအစား' : 'หมวด'), (LANG === 'my' ? 'အစားအစာ / အချိုရည် / အသုံးအဆောင်' : 'อาหาร / เครื่องดื่ม / ของใช้')) + '</div><div class="grow">' + f('type', (LANG === 'my' ? 'အမျိုးအစား' : 'ประเภท'), (LANG === 'my' ? 'အသား / ဟင်းသီးဟင်းရွက် / ဟင်းခတ်' : 'เนื้อสัตว์ / ผัก / เครื่องปรุง')) + '</div></div>' +
     '<div class="row" style="gap:10px"><div class="grow">' + f('brand', (LANG === 'my' ? 'တံဆိပ်' : 'ยี่ห้อ')) + '</div><div class="grow">' + f('store', (LANG === 'my' ? 'ဝယ်သည့်နေရာ' : 'ที่ซื้อ'), 'makro') + '</div></div>' +
     (LANG === 'my' ? '<div class="tip"><i class="ti ti-bulb"></i><div>ဥပမာ: ဝက်သားစင်း ၁ ကီလို ၁၆၀ ဘတ် → ဈေး 160, ချက်နည်းယူနစ် "กรัม", ၁ ထုပ် = ၁၀၀၀ ဂရမ်</div></div>' : '<div class="tip"><i class="ti ti-bulb"></i><div>ตัวอย่าง: ซื้อหมูสับ 1 กก. ราคา 160 บาท → ราคา 160, หน่วยในสูตร "กรัม", 1 ห่อ = 1000 กรัม</div></div>') +
     '<div class="row" style="gap:10px"><div class="grow">' + f('price', (LANG === 'my' ? 'ဝယ်ဈေး (ဘတ်) *' : 'ราคาซื้อ (บาท) *'), '', 1) + '</div><div class="grow">' + f('buyQty', (LANG === 'my' ? 'တစ်ကြိမ်ဝယ်ပမာဏ' : 'ซื้อครั้งละ'), '1', 1) + '</div><div class="grow">' + f('buyUnit', (LANG === 'my' ? 'ဝယ်သည့် ယူနစ်' : 'หน่วยที่ซื้อ'), 'กก.') + '</div></div>' +
@@ -1252,6 +1253,7 @@ function editIng(id) {
   $('#g_save').onclick = function () {
     var p = { id: id || '' };
     ['name', 'group', 'type', 'brand', 'store', 'price', 'buyQty', 'buyUnit', 'baseUnit', 'baseQty', 'yieldPct'].forEach(function (k) { p[k] = $('#g_' + k).value.trim(); });
+    if (S.ingImg !== undefined) p.imageId = S.ingImg;
     if (!p.name) { $('#g_err').textContent = (LANG === 'my' ? 'ကုန်ကြမ်းအမည် အရင်ထည့်ပါ' : 'ใส่ชื่อวัตถุดิบก่อน'); return; }
     if (!(Number(p.price) > 0) || !(Number(p.baseQty) > 0)) { $('#g_err').textContent = (LANG === 'my' ? 'ဈေး နှင့် "တစ်ကြိမ်ဝယ်လျှင် ချက်နည်းယူနစ် ဘယ်လောက်ရ" 0 ထက်ကြီးသော ဂဏန်း ဖြစ်ရမည်' : 'ราคา และ "ซื้อ 1 ครั้งได้กี่หน่วยสูตร" ต้องเป็นตัวเลขมากกว่า 0'); return; }
     var y = Number(p.yieldPct || 100); if (!(y > 0 && y <= 100)) { $('#g_err').textContent = (LANG === 'my' ? 'အမှန်သုံးနိုင်သည့် % သည် 1–100 အတွင်း ဖြစ်ရမည်' : '% ที่ใช้ได้จริงต้องอยู่ระหว่าง 1–100'); return; }
@@ -1260,6 +1262,29 @@ function editIng(id) {
       return call('listIngredients', {}, { silent: true }).then(function (x) { S.ings = x; renderIngredients(); if (r.impact && r.impact.length) showImpact(p.name, { oldPrice: i.price, price: Number(p.price), changePct: i.price ? Math.round((p.price - i.price) / i.price * 1000) / 10 : null, impact: r.impact }); });
     }).catch(function () { });
   };
+}
+ 
+function ingPhotoHtml(i) {
+  return '<div class="row" style="gap:10px;align-items:center;margin:4px 0 10px"><span id="g_imgbox" style="width:64px;height:64px;flex:0 0 64px;display:flex;align-items:center;justify-content:center;border-radius:12px;overflow:hidden;background:rgba(0,0,0,.06)">' + (i.thumb ? '<img src="' + esc(i.thumb) + '" alt="" style="width:100%;height:100%;object-fit:cover" onerror="this.remove()">' : '<i class="ti ti-basket"></i>') + '</span>' +
+    '<label class="btn small" style="margin:0"><i class="ti ti-camera"></i>' + (LANG === 'my' ? 'ပုံ ထည့်/ပြောင်းရန်' : 'ใส่/เปลี่ยนรูป') + '<input type="file" accept="image/*" style="display:none" onchange="pickIngImg(this)"></label>' +
+    '<button class="btn small" type="button" id="g_imgdel" style="' + (i.thumb ? '' : 'display:none') + '" onclick="delIngImg()"><i class="ti ti-trash"></i>' + (LANG === 'my' ? 'ပုံ ဖျက်ရန်' : 'ลบรูป') + '</button></div>';
+}
+function pickIngImg(input) {
+  var f = input.files && input.files[0]; if (!f) return;
+  var nm = ($('#g_name') && $('#g_name').value.trim()) || 'item', prev = '';
+  if ($('#g_imgbox')) $('#g_imgbox').innerHTML = '<i class="ti ti-loader"></i>';
+  resizeImage(f, 1200).then(function (d) { prev = d; return call('uploadImage', { dataUrl: d, name: 'ing-' + nm + '-' + Date.now() }); }).then(function (r) {
+    S.ingImg = r.id;
+    if ($('#g_imgbox')) $('#g_imgbox').innerHTML = '<img src="' + prev + '" alt="" style="width:100%;height:100%;object-fit:cover">';
+    if ($('#g_imgdel')) $('#g_imgdel').style.display = '';
+    toast((LANG === 'my' ? 'ပုံ တင်ပြီးပါပြီ — သိမ်းရန် ကို နှိပ်ပါ' : 'อัปโหลดรูปแล้ว กดบันทึกเพื่อเก็บ'));
+  }).catch(function () { if ($('#g_imgbox')) $('#g_imgbox').innerHTML = '<i class="ti ti-basket"></i>'; });
+  input.value = '';
+}
+function delIngImg() {
+  S.ingImg = '';
+  if ($('#g_imgbox')) $('#g_imgbox').innerHTML = '<i class="ti ti-basket"></i>';
+  if ($('#g_imgdel')) $('#g_imgdel').style.display = 'none';
 }
 
  
